@@ -4,6 +4,7 @@ import time
 
 from Adafruit_MotorHAT import Adafruit_MotorHAT
 from std_msgs.msg import String
+from geometry_msgs.msg import Twist
 
 
 
@@ -23,7 +24,8 @@ def set_speed(motor_ID, value):
 	
 	motor.setSpeed(speed)
 
-	if value > 0:
+	# Motor Direction for Jetbot Waveshare
+	if value < 0:
 		motor.run(Adafruit_MotorHAT.FORWARD)
 	else:
 		motor.run(Adafruit_MotorHAT.BACKWARD)
@@ -67,6 +69,38 @@ def on_cmd_str(msg):
 	else:
 		rospy.logerror(rospy.get_caller_id() + ' invalid cmd_str=%s', msg.data)
 
+# twist command (linear x, y, z, angular x, y, z)
+def on_cmd_twist(msg):
+	# Check all msg data
+	rospy.loginfo(rospy.get_caller_id() + '\n\
+		cmd_twist.linear.x=%s\n \
+		cmd_twist.linear.y=%s\n \
+		cmd_twist.linear.z=%s\n \
+		cmd_twist.angular.x=%s\n \
+		cmd_twist.angular.y=%s\n \
+		cmd_twist.angular.z=%s\n', 
+		msg.linear.x, msg.linear.y, msg.linear.z, 
+		msg.angular.x, msg.angular.y, msg.angular.z)
+	velocity = msg.linear.x
+	if velocity >= 1.0:
+		velocity = 1.0
+	rotation = msg.angular.z
+	rotation_str = ''
+	if rotation > 0:
+		rotation_str = 'left'
+	elif rotation < 0:
+		rotation_str = 'right'
+	else:
+		rotation_str = 'straight'
+	# rospy.loginfo(rospy.get_caller_id() + '\n\
+	# 	velocity : %s\n \
+	# 	rotation : %s\t%s\n', velocity, rotation, rotation_str)
+
+	set_speed(motor_left_ID, velocity - rotation / 10)
+	set_speed(motor_right_ID, velocity + rotation / 10)
+
+
+
 
 # initialization
 if __name__ == '__main__':
@@ -89,6 +123,7 @@ if __name__ == '__main__':
 	rospy.Subscriber('~cmd_dir', String, on_cmd_dir)
 	rospy.Subscriber('~cmd_raw', String, on_cmd_raw)
 	rospy.Subscriber('~cmd_str', String, on_cmd_str)
+	rospy.Subscriber('cmd_vel', Twist, on_cmd_twist)
 
 	# start running
 	rospy.spin()

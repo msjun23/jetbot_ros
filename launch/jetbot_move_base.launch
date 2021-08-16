@@ -1,0 +1,8 @@
+<launch>
+  <arg name="jetbot_ns" default="ns1"/>
+  
+  <group ns="$(arg jetbot_ns)">
+    <node pkg="jetbot_ros" type="jetbot_motors_auto.py" name="jetbot_motors_auto"  output="screen"/>
+    <node pkg="jetbot_ros" type="jetbot_camera" name="jetbot_camera"/>
+  </group>
+</launch>

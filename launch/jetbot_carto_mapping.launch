@@ -1,0 +1,6 @@
+<launch>
+  <include file="$(find rplidar_ros)/launch/rplidar_a3.launch"/>
+
+  <node pkg="jetbot_ros" type="jetbot_motors.py" name="jetbot_motors"  output="screen"/>
+  <node pkg="jetbot_ros" type="jetbot_camera" name="jetbot_camera"/>
+</launch>
